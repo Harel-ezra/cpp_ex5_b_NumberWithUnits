@@ -8,16 +8,26 @@ namespace ariel
 {
     class NumberWithUnits
     {
+      
     private:
         double value;
         std::string unit;
+
+    public:   
         static std::map<std::string, std::map<std::string,double>> dic;
 
-    public:
         //constructor
         NumberWithUnits(double n, std::string s)
-            : value(n), unit(s)
         {
+            if(dic.find(s)!=dic.end())
+            {
+                value=n;
+                unit=s;
+            }
+            else
+            {
+                throw std::out_of_range("Invalid Unit!");
+            }
         }
         //distractor
         ~NumberWithUnits()
@@ -27,11 +37,11 @@ namespace ariel
 
         //matemtic operator +
         //
-        NumberWithUnits operator+(const NumberWithUnits &other) const;
+        NumberWithUnits operator+(const NumberWithUnits &other) const; // firend??
         NumberWithUnits operator+=(const NumberWithUnits &other);
         NumberWithUnits &operator+() const;
         // -
-        NumberWithUnits operator-(const NumberWithUnits &other) const;
+        NumberWithUnits operator-(const NumberWithUnits &other) const; //friend??
         NumberWithUnits operator-=(const NumberWithUnits &other);
         const NumberWithUnits &operator-() const;
 
@@ -57,10 +67,10 @@ namespace ariel
 
         friend std::ostream &operator<<(std::ostream &output, const NumberWithUnits &n);
         friend std::istream &operator>>(std::istream &input, NumberWithUnits &n);
-
-        friend bool same_unit(const NumberWithUnits &a, const NumberWithUnits &b)
+        
+        friend bool compare_exaption(const NumberWithUnits &a, const NumberWithUnits &b)
         {
-            if (a.unit.compare(b.unit) != 0)
+            if (dic[a.unit][b.unit]==0)
             {
                 return false;
             }
