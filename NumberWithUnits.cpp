@@ -8,7 +8,7 @@ void NumberWithUnits::read_units(ifstream &file)
     string line;
     while (getline(file,line))
     {
-        cout<<line;
+        cout<<line<<endl;
     }
     
 
@@ -109,4 +109,11 @@ ostream &ariel::operator<<(ostream &output, const NumberWithUnits &n)
 istream &ariel::operator>>(istream &input, NumberWithUnits &n)
 {
     return input;
+}
+
+int main()
+{
+    ifstream MyReadFile("units.txt");
+    NumberWithUnits::read_units(MyReadFile);
+    return 0;
 }
