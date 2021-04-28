@@ -1,14 +1,15 @@
 #include "NumberWithUnits.hpp"
 #include <iterator>
 #include <map>
+#include <string>
 using namespace std;
 using namespace ariel;
 //#include <bits/stdc++.h>
 
+#define EPS 0.001;
 
-
-NumberWithUnits a(1, "km");
-map<string, map<string,double>> NumberWithUnits::dic;
+// read the units from a text file
+map<string, map<string, double>> NumberWithUnits::dic;
 void NumberWithUnits::read_units(ifstream &file)
 {
     double left_val;
@@ -16,31 +17,30 @@ void NumberWithUnits::read_units(ifstream &file)
     char eq;
     double right_val;
     string right_unit;
-    while(file>>left_val>>left_units>>eq>>right_val>>right_unit)
+    while (file >> left_val >> left_units >> eq >> right_val >> right_unit)
     {
-        double val=right_val/left_val;
+        double val = right_val / left_val;
         // create conection for left_units
-        map<string,double>::iterator iter = NumberWithUnits::dic[right_unit].begin();
-        while(iter!=NumberWithUnits::dic[right_unit].end())
+        map<string, double>::iterator iter = NumberWithUnits::dic[right_unit].begin();
+        while (iter != NumberWithUnits::dic[right_unit].end())
         {
-            NumberWithUnits::dic[left_units][iter->first]=val*iter->second; // insert 
-            NumberWithUnits::dic[iter->first][left_units]=1/(val*iter->second); // insert
+            NumberWithUnits::dic[left_units][iter->first] = val * iter->second;       // insert
+            NumberWithUnits::dic[iter->first][left_units] = 1 / (val * iter->second); // insert
             // cout<<"1 "<<left_units<<" = "<<val*iter->second<<" "<<iter->first<<endl;
-            // cout<<"1 "<<iter->first<<" = "<<1/(val*iter->second)<<" "<<left_units<<endl;   
+            // cout<<"1 "<<iter->first<<" = "<<1/(val*iter->second)<<" "<<left_units<<endl;
             ++iter;
-
         }
-        iter=NumberWithUnits::dic[left_units].begin();
-        while(iter!=NumberWithUnits::dic[left_units].end())
+        iter = NumberWithUnits::dic[left_units].begin();
+        while (iter != NumberWithUnits::dic[left_units].end())
         {
-            NumberWithUnits::dic[right_unit][iter->first]=1/(val/iter->second); // insert 
-            NumberWithUnits::dic[iter->first][right_unit]=val/iter->second; // insert
+            NumberWithUnits::dic[right_unit][iter->first] = 1 / (val / iter->second); // insert
+            NumberWithUnits::dic[iter->first][right_unit] = val / iter->second;       // insert
             // cout<<"1 "<<right_unit<<" = "<<1/(val/iter->second)<<" "<<iter->first<<endl;
             // cout<<"1 "<<iter->first<<" = "<<val/iter->second<<" "<<right_unit<<endl;
             ++iter;
         }
-        NumberWithUnits::dic[left_units][right_unit]=val; // insert 
-        NumberWithUnits::dic[right_unit][left_units]=1/val; // insert
+        NumberWithUnits::dic[left_units][right_unit] = val;     // insert
+        NumberWithUnits::dic[right_unit][left_units] = 1 / val; // insert
         //cout<<"insert one"<<endl;
     }
 }
@@ -49,104 +49,198 @@ void NumberWithUnits::read_units(ifstream &file)
 //
 NumberWithUnits NumberWithUnits::operator+(const NumberWithUnits &other) const
 {
-
-    return a;
+    compare_exaption(*this, other);
+    if (this->unit==other.unit)
+    {
+        return NumberWithUnits(this->value + other.value, this->unit);
+    }
+    return NumberWithUnits(this->value + (other.value * NumberWithUnits::dic[other.unit][this->unit]), this->unit);
 }
 
 NumberWithUnits NumberWithUnits::operator+=(const NumberWithUnits &other)
 {
+    compare_exaption(*this, other);
+    if (this->unit==other.unit)
+    {
+        this->value += other.value;
+    }
+    else
+    {
+        this->value += (other.value * NumberWithUnits::dic[other.unit][this->unit]);
+    }
+    return *this;
+}
 
-    return a;
-}
-NumberWithUnits &NumberWithUnits::operator+() const
+// onary
+NumberWithUnits NumberWithUnits::operator+() const
 {
-    return a;
+    return NumberWithUnits(this->value, this->unit);
 }
+
 // -
 NumberWithUnits NumberWithUnits::operator-(const NumberWithUnits &other) const
 {
-
-    return a;
+    compare_exaption(*this, other);
+    if (this->unit==other.unit)
+    {
+        return NumberWithUnits(this->value - other.value, this->unit);
+    }
+    return NumberWithUnits(this->value - (other.value * NumberWithUnits::dic[other.unit][this->unit]), this->unit);
 }
+
 NumberWithUnits NumberWithUnits::operator-=(const NumberWithUnits &other)
 {
-
-    return a;
+    compare_exaption(*this, other);
+    if (this->unit==other.unit)
+    {
+        this->value -= other.value;
+    }
+    else
+    {
+        this->value -= (other.value * NumberWithUnits::dic[other.unit][this->unit]);
+    }
+    return *this;
 }
-const NumberWithUnits &NumberWithUnits::operator-() const
+
+NumberWithUnits NumberWithUnits::operator-() const
 {
-    return a;
+    return NumberWithUnits(-1 * this->value, this->unit);
 }
 
 //comper operator
 bool NumberWithUnits::operator==(const NumberWithUnits &other) const
-{
-    return true;
+{  
+    NumberWithUnits temp=*this-other;
+    return abs(temp.value)<EPS;
+    //return (*this <= other && *this >= other);
 }
 bool NumberWithUnits::operator!=(const NumberWithUnits &other) const
 {
-    return true;
+    return !(*this == other);
 }
 
-const NumberWithUnits &NumberWithUnits::operator<=(const NumberWithUnits &other) const
+bool NumberWithUnits::operator<=(const NumberWithUnits &other) const
 {
-    return a;
+    return !(*this > other);
 }
-const NumberWithUnits &NumberWithUnits::operator>=(const NumberWithUnits &other) const
+
+bool NumberWithUnits::operator>=(const NumberWithUnits &other) const
 {
-    return a;
+    return !(*this < other);
 }
-const NumberWithUnits &NumberWithUnits::operator<(const NumberWithUnits &other) const
+
+bool NumberWithUnits::operator<(const NumberWithUnits &other) const
 {
-    return a;
+    compare_exaption(*this, other);
+    if (this->unit==other.unit)
+    {
+        return (this->value < other.value);
+    }
+
+    return (this->value < (other.value * NumberWithUnits::dic[other.unit][this->unit]));
 }
-const NumberWithUnits &NumberWithUnits::operator>(const NumberWithUnits &other) const
+
+bool NumberWithUnits::operator>(const NumberWithUnits &other) const
 {
-    return a;
+    return other < *this;
 }
 
 //perfix\postfix
 NumberWithUnits &NumberWithUnits::operator++()
 {
+    this->value++;
     return *this;
 }
-NumberWithUnits &NumberWithUnits::operator++(int dummy_flag_for_postfix_increment)
+NumberWithUnits NumberWithUnits::operator++(int dummy_flag_for_postfix_increment) // need reference??
 {
-    return *this;
+    NumberWithUnits temp = *this;
+    this->value++;
+    return temp;
 }
 NumberWithUnits &NumberWithUnits::operator--()
 {
+    this->value--;
     return *this;
 }
-NumberWithUnits &NumberWithUnits::operator--(int dummy_flag_for_postfix_increment)
+NumberWithUnits NumberWithUnits::operator--(int dummy_flag_for_postfix_increment)
 {
-    return *this;
+    NumberWithUnits temp = *this;
+    this->value--;
+    return temp;
 }
 // multi
-NumberWithUnits &ariel::operator*(const double n, NumberWithUnits &number)
+NumberWithUnits ariel::operator*(const double n, const NumberWithUnits &number)
 {
-    return a;
+    return number * n;
 }
-NumberWithUnits &NumberWithUnits::operator*(const double n)
+NumberWithUnits NumberWithUnits::operator*(const double n) const
 {
-    return *this;
+    //this->value*=n;
+    return NumberWithUnits(this->value * n, this->unit);
 }
 //input output
 
 ostream &ariel::operator<<(ostream &output, const NumberWithUnits &n)
 {
+    output << n.value << "[" << n.unit << "]";
     return output;
 }
-istream &ariel::operator>>(istream &input, NumberWithUnits &n)
-{
+
+
+static istream& getAndCheckNextCharIs(istream& input, char expectedChar) {
+    char actualChar;
+    input >> actualChar;
+    if (!input) {return input;}
+
+    if (actualChar!=expectedChar) {
+        // failbit is for format error
+        input.setstate(ios::failbit);
+    }
     return input;
 }
 
-int main()
+istream &ariel::operator>>(istream &input, NumberWithUnits &n)
 {
-    ifstream MyReadFile("units.txt");
-    NumberWithUnits::read_units(MyReadFile);
-    //NumberWithUnits::dic["hey"]["hoo"]=1.24;
-    //NumberWithUnits::dic.at("hey").at("hoo")=1.24;
-    return 0;
+    string u;
+    double v=0; 
+
+    // remember place for rewinding
+    ios::pos_type startPosition = input.tellg();
+
+    if ( (!(input >> v))                 ||
+         (!getAndCheckNextCharIs(input,'['))  ||
+         (!(input >> u))                 ||
+         (!(getAndCheckNextCharIs(input,']'))) ) {
+
+        // rewind on error
+        auto errorState = input.rdstate(); // remember error state
+        input.clear(); // clear error so seekg will work
+        input.seekg(startPosition); // rewind
+        input.clear(errorState); // set back the error flag
+        throw invalid_argument("input is dont good");
+    } else {
+        n=NumberWithUnits(v,u);
+    }
+
+    return input;
 }
+
+// int main()
+// {
+//     // ifstream MyReadFile("units.txt");
+//     // NumberWithUnits::read_units(MyReadFile);
+//     // NumberWithUnits a(1,"km");
+//     // 4*a;
+//     // //NumberWithUnits::dic["hey"]["hoo"]=1.24;
+//     // //NumberWithUnits::dic.at("hey").at("hoo")=1.24;
+//     try
+//     {
+//         NumberWithUnits(0, "year");
+//     }
+//     catch (const std::exception &e)
+//     {
+//         cout << "catch exaption" << endl;
+//     }
+
+//     return 0;
+// }
