@@ -5,16 +5,16 @@
 using namespace std;
 using namespace ariel;
 
-#define EPS 0.001;
+const double EPS= 0.001;
 
 // read the units from a text file
 map<string, map<string, double>> NumberWithUnits::dic;
 void NumberWithUnits::read_units(ifstream &file)
 {
-    double left_val;
+    double left_val=0;
     string left_units;
-    char eq;
-    double right_val;
+    char eq='\0';
+    double right_val=0;
     string right_unit;
     while (file >> left_val >> left_units >> eq >> right_val >> right_unit)
     {
@@ -176,7 +176,7 @@ ostream &ariel::operator<<(ostream &output, const NumberWithUnits &n)
 
 static istream &getAndCheckNextCharIs(istream &input, char expectedChar)
 {
-    char actualChar;
+    char actualChar='\0';
     input >> actualChar;
     if (!input)
     {
@@ -221,7 +221,7 @@ istream &ariel::operator>>(istream &input, NumberWithUnits &n)
             throw invalid_argument("input is dont good");
         }
     }
-    NumberWithUnits(v, u); // check input
+    NumberWithUnits a(v, u); // check input
     n.value = v;
     n.unit = u;
     return input;
