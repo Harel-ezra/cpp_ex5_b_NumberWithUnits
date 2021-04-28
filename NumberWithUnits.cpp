@@ -4,7 +4,6 @@
 #include <string>
 using namespace std;
 using namespace ariel;
-//#include <bits/stdc++.h>
 
 #define EPS 0.001;
 
@@ -26,8 +25,6 @@ void NumberWithUnits::read_units(ifstream &file)
         {
             NumberWithUnits::dic[left_units][iter->first] = val * iter->second;       // insert
             NumberWithUnits::dic[iter->first][left_units] = 1 / (val * iter->second); // insert
-            // cout<<"1 "<<left_units<<" = "<<val*iter->second<<" "<<iter->first<<endl;
-            // cout<<"1 "<<iter->first<<" = "<<1/(val*iter->second)<<" "<<left_units<<endl;
             ++iter;
         }
         iter = NumberWithUnits::dic[left_units].begin();
@@ -35,13 +32,10 @@ void NumberWithUnits::read_units(ifstream &file)
         {
             NumberWithUnits::dic[right_unit][iter->first] = 1 / (val / iter->second); // insert
             NumberWithUnits::dic[iter->first][right_unit] = val / iter->second;       // insert
-            // cout<<"1 "<<right_unit<<" = "<<1/(val/iter->second)<<" "<<iter->first<<endl;
-            // cout<<"1 "<<iter->first<<" = "<<val/iter->second<<" "<<right_unit<<endl;
             ++iter;
         }
         NumberWithUnits::dic[left_units][right_unit] = val;     // insert
         NumberWithUnits::dic[right_unit][left_units] = 1 / val; // insert
-        //cout<<"insert one"<<endl;
     }
 }
 
@@ -50,7 +44,7 @@ void NumberWithUnits::read_units(ifstream &file)
 NumberWithUnits NumberWithUnits::operator+(const NumberWithUnits &other) const
 {
     compare_exaption(*this, other);
-    if (this->unit==other.unit)
+    if (this->unit == other.unit)
     {
         return NumberWithUnits(this->value + other.value, this->unit);
     }
@@ -60,7 +54,7 @@ NumberWithUnits NumberWithUnits::operator+(const NumberWithUnits &other) const
 NumberWithUnits NumberWithUnits::operator+=(const NumberWithUnits &other)
 {
     compare_exaption(*this, other);
-    if (this->unit==other.unit)
+    if (this->unit == other.unit)
     {
         this->value += other.value;
     }
@@ -80,18 +74,13 @@ NumberWithUnits NumberWithUnits::operator+() const
 // -
 NumberWithUnits NumberWithUnits::operator-(const NumberWithUnits &other) const
 {
-    compare_exaption(*this, other);
-    if (this->unit==other.unit)
-    {
-        return NumberWithUnits(this->value - other.value, this->unit);
-    }
-    return NumberWithUnits(this->value - (other.value * NumberWithUnits::dic[other.unit][this->unit]), this->unit);
+    return *this + (-other);
 }
 
 NumberWithUnits NumberWithUnits::operator-=(const NumberWithUnits &other)
 {
     compare_exaption(*this, other);
-    if (this->unit==other.unit)
+    if (this->unit == other.unit)
     {
         this->value -= other.value;
     }
@@ -109,10 +98,9 @@ NumberWithUnits NumberWithUnits::operator-() const
 
 //comper operator
 bool NumberWithUnits::operator==(const NumberWithUnits &other) const
-{  
-    NumberWithUnits temp=*this-other;
-    return abs(temp.value)<EPS;
-    //return (*this <= other && *this >= other);
+{
+    NumberWithUnits temp = *this - other;
+    return abs(temp.value) < EPS;
 }
 bool NumberWithUnits::operator!=(const NumberWithUnits &other) const
 {
@@ -132,7 +120,7 @@ bool NumberWithUnits::operator>=(const NumberWithUnits &other) const
 bool NumberWithUnits::operator<(const NumberWithUnits &other) const
 {
     compare_exaption(*this, other);
-    if (this->unit==other.unit)
+    if (this->unit == other.unit)
     {
         return (this->value < other.value);
     }
@@ -186,13 +174,17 @@ ostream &ariel::operator<<(ostream &output, const NumberWithUnits &n)
     return output;
 }
 
-
-static istream& getAndCheckNextCharIs(istream& input, char expectedChar) {
+static istream &getAndCheckNextCharIs(istream &input, char expectedChar)
+{
     char actualChar;
     input >> actualChar;
-    if (!input) {return input;}
+    if (!input)
+    {
+        return input;
+    }
 
-    if (actualChar!=expectedChar) {
+    if (actualChar != expectedChar)
+    {
         // failbit is for format error
         input.setstate(ios::failbit);
     }
@@ -202,45 +194,55 @@ static istream& getAndCheckNextCharIs(istream& input, char expectedChar) {
 istream &ariel::operator>>(istream &input, NumberWithUnits &n)
 {
     string u;
-    double v=0; 
+    double v = 0;
 
     // remember place for rewinding
     ios::pos_type startPosition = input.tellg();
 
-    if ( (!(input >> v))                 ||
-         (!getAndCheckNextCharIs(input,'['))  ||
-         (!(input >> u))                 ||
-         (!(getAndCheckNextCharIs(input,']'))) ) {
-
+    if ((!(input >> v)) ||
+        (!getAndCheckNextCharIs(input, '[')) ||
+        (!(input >> u))) 
+    {
         // rewind on error
         auto errorState = input.rdstate(); // remember error state
-        input.clear(); // clear error so seekg will work
-        input.seekg(startPosition); // rewind
-        input.clear(errorState); // set back the error flag
+        input.clear();                     // clear error so seekg will work
+        input.seekg(startPosition);        // rewind
+        input.clear(errorState);           // set back the error flag
         throw invalid_argument("input is dont good");
-    } else {
-        n=NumberWithUnits(v,u);
     }
-
+    if (u.at(u.length() - 1) == ']')
+    {
+        u = u.substr(0, u.length() - 1);
+    }
+    else
+    {
+        if (!(getAndCheckNextCharIs(input, ']')))
+        {
+            throw invalid_argument("input is dont good");
+        }
+    }
+    NumberWithUnits(v, u); // check input
+    n.value = v;
+    n.unit = u;
     return input;
 }
 
-// int main()
-// {
-//     // ifstream MyReadFile("units.txt");
-//     // NumberWithUnits::read_units(MyReadFile);
-//     // NumberWithUnits a(1,"km");
-//     // 4*a;
-//     // //NumberWithUnits::dic["hey"]["hoo"]=1.24;
-//     // //NumberWithUnits::dic.at("hey").at("hoo")=1.24;
-//     try
-//     {
-//         NumberWithUnits(0, "year");
-//     }
-//     catch (const std::exception &e)
-//     {
-//         cout << "catch exaption" << endl;
-//     }
+//  int main()
+//  {
+//      // ifstream MyReadFile("units.txt");
+//      // NumberWithUnits::read_units(MyReadFile);
+//      // NumberWithUnits a(1,"km");
+//      // 4*a;
+//      // //NumberWithUnits::dic["hey"]["hoo"]=1.24;
+//      // //NumberWithUnits::dic.at("hey").at("hoo")=1.24;
+//      try
+//      {
+//          NumberWithUnits(0, "year");
+//      }
+//      catch (const std::exception &e)
+//      {
+//          cout << "catch exaption" << endl;
+//      }
 
-//     return 0;
-// }
+//      return 0;
+//  }

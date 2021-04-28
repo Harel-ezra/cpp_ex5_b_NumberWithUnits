@@ -11,11 +11,11 @@ namespace ariel
     {
 
     private:
-        double value;
-        std::string unit;
         static std::map<std::string, std::map<std::string, double>> dic;
 
     public:
+        double value;
+        std::string unit;
         //constructor
         NumberWithUnits(double n, std::string s)
         {
@@ -44,12 +44,6 @@ namespace ariel
         NumberWithUnits operator-(const NumberWithUnits &other) const; //friend??
         NumberWithUnits operator-=(const NumberWithUnits &other);
         NumberWithUnits operator-() const;
-
-        //need??
-        NumberWithUnits operator=(const NumberWithUnits& other)
-        {
-            return NumberWithUnits(this->value,this->unit);
-        }
 
         //comper operator
         bool operator==(const NumberWithUnits &other) const;
